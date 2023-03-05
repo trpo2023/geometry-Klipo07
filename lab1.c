@@ -1,348 +1,169 @@
 #include <ctype.h>
-#include <math.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#define NAME_SIZE 25
-
-typedef struct point {
-    double x;
-    double y;
-} Point;
-
-typedef struct circle {
-    Point point;
-    double raduis;
-    double perimeter;
-    double area;
-} Circle;
-
-enum Errors {
-    _FILE,
-    NOT_FILE,
-    ER_NAME,
-    ER_NOT_DOUBLE,
-    ER_BACK_BRACE,
-    ER_UNEXPECT_TOKEN,
-    ER_EXPECT_COMMA,
-    ER_UNEXPECT_COMMA,
-};
-
-void print_error(int column, int status, int is_file, FILE* file)
+int Figur(char* str)
 {
-    if (is_file == _FILE) {
-        char temp[256];
-        fseek(file, -column - 1, SEEK_CUR);
-        fgets(temp, 255, file);
-        printf("\n%s", temp);
+    int flag = 1;
+    char data[40];
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] != '(') {
+            data[i] = tolower(str[i]);
+            str[i] = tolower(str[i]);
+        } else
+            break;
     }
-
-    for (int i = 0; i < column; i++) {
-        putchar(' ');
+    char figure[] = "circle";
+    if (strcmp(data, figure) == 0) {
+        flag = 0;
     }
-    printf("\e[1;31m^\e[0m\n");
-    switch (status) {
-    case ER_NAME:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31mexpected "
-               "'circle'\e[0m\n",
-               column);
-        break;
-    case ER_NOT_DOUBLE:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31mexpected "
-               "'<double>'\e[0m\n",
-               column);
-        break;
-    case ER_BACK_BRACE:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31mexpected ')'\e[0m\n",
-               column);
-        break;
-    case ER_UNEXPECT_TOKEN:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31munexpected "
-               "token\e[0m\n",
-               column);
-        break;
-    case ER_EXPECT_COMMA:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31mexpected ','\e[0m\n",
-               column);
-        break;
-    case ER_UNEXPECT_COMMA:
-        printf("\e[1;31mError\e[0m at column %d: \e[1;31munexpected ','\e[0m\n",
-               column);
-    }
+    return flag;
 }
 
-void to_lower_string(char* string)
+int first(char* str)
 {
-    while (*string != '\0') {
-        *string = tolower(*string);
-        string++;
-    }
-}
-
-void del_space(int* column, FILE* file)
-{
-    char ch;
-    while ((ch = getc(file)) == ' ') {
-        *column += 1;
-        continue;
-    }
-    if (ch != ' ')
-        ungetc(ch, file);
-}
-
-double get_number(int* column, int is_file, FILE* file)
-{
-    char temp[25];
-    char ch;
-    int point_count = 0;
-    int i = 0;
-    int minus_count = 0;
-
-    del_space(column, file);
-
-    while ((ch = getc(file)) != ' ') {
-        temp[i] = ch;
-
-        if (temp[i] == '.') {
-            point_count++;
-            if (point_count > 1) {
-                if (is_file == _FILE)
-                    print_error(*column + i + 1, ER_NOT_DOUBLE, _FILE, file);
-                else
-                    print_error(*column + i + 1, ER_NOT_DOUBLE, NOT_FILE, file);
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        if (temp[i] == '-') {
-            minus_count++;
-            if (minus_count > 1) {
-                if (is_file == _FILE)
-                    print_error(*column + i + 1, ER_NOT_DOUBLE, _FILE, file);
-                else
-                    print_error(*column + i + 1, ER_NOT_DOUBLE, NOT_FILE, file);
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        if (temp[i] == ')') {
-            ungetc(temp[i], file);
-            i++;
+    int flag = 1;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] != '(')
+            continue;
+        else {
+            flag = 0;
             break;
         }
+    }
+    return flag;
+}
 
-        if (temp[i] == ',') {
-            ungetc(temp[i], file);
+int Arg(char* str)
+{
+    int flag = 1;
+    int data;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '(') {
+            data = i;
             break;
         }
-
-        if (temp[i] == '(') {
-            i++;
-            if (is_file == _FILE)
-                print_error(*column + i, ER_BACK_BRACE, _FILE, file);
-            else
-                print_error(*column + i, ER_BACK_BRACE, NOT_FILE, file);
-            exit(EXIT_FAILURE);
+    }
+    for (int i = data + 1; i < strlen(str) - 2; i++) {
+        if ((str[i] >= 48 && str[i] <= 57) || str[i] == '.' || str[i] == ','
+            || str[i] == ' ')
+            flag = 0;
+        else {
+            flag = 1;
+            break;
         }
+    }
+    for (int i = data + 1; i < strlen(str) - 1; i++) {
+        if (str[i] == '.' && ((str[i + 1] < 48 || str[i + 1] > 57)
+            || (str[i - 1] < 48 || str[i - 1] > 57)))
+            flag = 1;
+        else if (
+                str[i] == ',' && (str[i + 1] != ' ')
+                && (str[i - 1] < 48 && str[i - 1] > 57))
+            flag = 1;
+    }
+    return flag;
+}
 
-        if (!isdigit(temp[i]) && temp[i] != '.' && temp[i] != '-') {
-            i++;
-            if (is_file == _FILE)
-                print_error(*column + i, ER_NOT_DOUBLE, _FILE, file);
-            else
-                print_error(*column + i, ER_NOT_DOUBLE, NOT_FILE, file);
-            exit(EXIT_FAILURE);
+int num(char* str){
+    int flag=1;
+    int data;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '(') {
+            data = i;
+            break;
         }
-
-        i++;
     }
-    del_space(column, file);
-    *column += i + 1;
-    char* eptr;
-    return strtod(temp, &eptr);
+    int cnt=0;
+    for (int i = data + 1; i < strlen(str) - 2; i++) {
+	if(str[i] >= 48 && str[i] <= 57)
+	    cnt++;
+	else if(str[i]=='.')
+	    cnt--;
+	if(cnt>3)
+	    flag=1;
+	else
+	    flag=0;
+    }
+    return flag;
 }
 
-bool expect(char expect, int* column, int status, int is_file, FILE* file)
+int Simval(char* str)
 {
-    char ch;
-    if ((ch = getc(file)) == expect) {
-        return true;
-    } else {
-        if (is_file == _FILE)
-            print_error(*column, status, _FILE, file);
-        else
-            print_error(*column, status, NOT_FILE, file);
-        exit(EXIT_FAILURE);
-    }
-}
-
-bool unexpect(char unexpect, int* column, int status, int is_file, FILE* file)
-{
-    char ch;
-    if ((ch = getc(file)) == unexpect) {
-        if (is_file == _FILE)
-            print_error(*column, status, _FILE, file);
-        else
-            print_error(*column, status, NOT_FILE, file);
-        exit(EXIT_FAILURE);
-    }
-    ungetc(ch, file);
-    return true;
-}
-
-void get_point(Point* point, int* column, int is_file, FILE* file)
-{
-    if (is_file == _FILE) {
-        point->x = get_number(column, _FILE, file);
-        unexpect(',', column, ER_UNEXPECT_COMMA, _FILE, file);
-
-        point->y = get_number(column, _FILE, file);
-    } else {
-        point->x = get_number(column, NOT_FILE, file);
-        unexpect(',', column, ER_UNEXPECT_COMMA, NOT_FILE, file);
-
-        point->y = get_number(column, NOT_FILE, file);
-    }
-}
-
-void end_of_line(int* column, int is_file, FILE* file)
-{
-    char ch;
-    while ((ch = getc(file)) != '\n' && ch != EOF) {
-        if (ch != ' ') {
-            if (is_file == _FILE)
-                print_error(*column, ER_UNEXPECT_TOKEN, _FILE, file);
-            else
-                print_error(*column, ER_UNEXPECT_TOKEN, NOT_FILE, file);
-            exit(EXIT_FAILURE);
+    int flag = 1;
+    int data;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '(') {
+            data = i;
+            break;
         }
-        *column += 1;
     }
-}
-
-void take_info_circle(Circle* circle, int* column, int is_file, FILE* file)
-{
-    if (is_file == _FILE) {
-        get_point(&circle->point, column, _FILE, file);
-        expect(',', column, ER_EXPECT_COMMA, _FILE, file);
-
-        circle->raduis = get_number(column, _FILE, file);
-
-        expect(')', column, ER_BACK_BRACE, _FILE, file);
-
-        end_of_line(column, _FILE, file);
-    } else {
-        get_point(&circle->point, column, NOT_FILE, file);
-        expect(',', column, ER_EXPECT_COMMA, NOT_FILE, file);
-
-        circle->raduis = get_number(column, NOT_FILE, file);
-
-        expect(')', column, ER_BACK_BRACE, NOT_FILE, file);
-
-        end_of_line(column, NOT_FILE, file);
-    }
-    circle->perimeter = 2 * M_PI * circle->raduis;
-    circle->area = M_PI * circle->raduis * circle->raduis;
-}
-
-void show_info_circle(Circle* circle)
-{
-    printf("circle(%.2f %.2f, %.2f)\n",
-           circle->point.x,
-           circle->point.y,
-           circle->raduis);
-    printf("\tarea = %.4f\n", circle->area);
-    printf("\tperimeter = %.4f\n", circle->perimeter);
-}
-
-void parser_stdin(FILE* stdin)
-{
-    char geom[NAME_SIZE] = {0};
-    char ch;
-    int column;
-
-    puts("Enter a geometric shape (or q for exit):");
-    while ((ch = getc(stdin)) != EOF && ch != 'q') {
-        column = 0;
-        do {
-            if (ch == '(' || ch == ' ') {
-                to_lower_string(geom);
-                if (strcmp(geom, "circle") == 0) {
-                    Circle circle;
-                    take_info_circle(&circle, &column, NOT_FILE, stdin);
-                    printf("\nYou have entered: \n");
-                    show_info_circle(&circle);
-                    break;
-                } else {
-                    print_error(0, ER_NAME, NOT_FILE, stdin);
-                    exit(EXIT_FAILURE);
-                }
-            }
-
-            if (ch == ')') {
-                print_error(column, ER_BACK_BRACE, NOT_FILE, stdin);
-                exit(EXIT_FAILURE);
-            }
-
-            geom[column++] = ch;
-
-        } while ((ch = getc(stdin)) != '\n');
-        puts("Enter a new geometric shape (or q for exit):");
-    }
-}
-
-void parser_file(FILE* file)
-{
-    char geom[NAME_SIZE] = {0};
-    char ch;
-    int column;
-
-    while ((ch = getc(file)) != EOF && ch != 'q') {
-        column = 0;
-        do {
-            if (ch == '(' || ch == ' ') {
-                to_lower_string(geom);
-                if (strcmp(geom, "circle") == 0) {
-                    Circle circle;
-                    take_info_circle(&circle, &column, _FILE, file);
-                    printf("\nYou have entered: \n");
-                    show_info_circle(&circle);
-                    break;
-                } else {
-                    print_error(0, ER_NAME, _FILE, file);
-                    exit(EXIT_FAILURE);
-                }
-            }
-
-            if (ch == ')') {
-                print_error(column, ER_BACK_BRACE, _FILE, file);
-                exit(EXIT_FAILURE);
-            }
-
-            geom[column++] = ch;
-
-        } while ((ch = getc(file)) != '\n');
-    }
-}
-
-int main(int argc, char* argv[])
-{
-    FILE* file = NULL;
-    if (argc < 2)
-        parser_stdin(stdin);
-    else if (argc == 2) {
-        if ((file = fopen(argv[1], "r")) == NULL) {
-            printf("\e[1;31mError\e[0m: can't open file \e[1;35m\"%s\"\e[0m\n",
-                   argv[1]);
-            exit(EXIT_FAILURE);
+    for (int i = data + 1; i < strlen(str) - 2; i++) {
+        if (str[i] == ',') {
+            flag = 0;
         } else {
-            parser_file(file);
-            fclose(file);
+            continue;
         }
-    } else {
-        printf("\e[1;35mUsage\e[0m: %s <filename>\n", argv[0]);
     }
+    return flag;
+}
 
+int End(char* str)
+{
+    int flag = 1;
+    int bracket = 0;
+    long int ending = strlen(str) - 2;
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == ')') {
+            bracket = i;
+            break;
+        }
+    }
+    if (bracket == ending || bracket == ending + 1)
+        flag = 0;
+    return flag;
+}
+
+int main()
+{
+    FILE* file;
+    file = fopen("lab1.txt", "r");
+    char str[40];
+    int cnt = 1;
+    fgets(str, 40, file);
+    if (Figur(str)) {
+        printf("Неправильное название фигуры в %d строке\n", cnt);
+        if (first(str))
+            printf("Конкретная ошибка:Ошибка открывающей скобки\n");
+    } else if (Arg(str))
+        printf("Неправильно введены координаты в %d строке\n", cnt);
+    else if(num(str))
+	printf("Слишком много переданных аргументов в %d строке \n",cnt);
+    else if (Simval(str))
+        printf("Неправильная постановка запятой в %d строке\n", cnt);
+    else if (End(str))
+        printf("Ошибка завершающей скобки в %d строке\n", cnt);
+    else
+        printf("%s\n", str);
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '\n' && fgets(str, 40, file) != NULL) {
+            cnt++;
+            if (Figur(str)) {
+                printf("Неправильное название фигуры во %d строке\n", cnt);
+                if (first(str))
+                    printf("Конкретная ошибка:Ошибка открывающей скобки\n");
+            } else if (Arg(str))
+                printf("Неправильно введены координаты во %d строке\n", cnt);
+            else if(num(str))
+	        printf("Слишком много переданных аргументов во %d строке \n",cnt);
+	    else if (Simval(str))
+                printf("Неправильная постановка запятой во %d строке\n", cnt);
+            else if (End(str))
+                printf("Ошибка завершающей скобки во %d строке\n", cnt);
+            else
+                printf("%s\n", str);
+            i = 0;
+        }
+    }
+    fclose(file);
     return 0;
 }
