@@ -1,169 +1,289 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-int Figur(char* str)
-{
-    int flag = 1;
-    char data[40];
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] != '(') {
-            data[i] = tolower(str[i]);
-            str[i] = tolower(str[i]);
-        } else
-            break;
-    }
-    char figure[] = "circle";
-    if (strcmp(data, figure) == 0) {
-        flag = 0;
-    }
-    return flag;
-}
+#include <math.h>
 
-int first(char* str)
-{
-    int flag = 1;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] != '(')
-            continue;
-        else {
-            flag = 0;
-            break;
-        }
-    }
-    return flag;
-}
+#define RED_FLASH "\e[5;31m"
+#define END "\e[0m"
+#define MAX 100
 
-int Arg(char* str)
-{
-    int flag = 1;
-    int data;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == '(') {
-            data = i;
-            break;
-        }
-    }
-    for (int i = data + 1; i < strlen(str) - 2; i++) {
-        if ((str[i] >= 48 && str[i] <= 57) || str[i] == '.' || str[i] == ','
-            || str[i] == ' ')
-            flag = 0;
-        else {
-            flag = 1;
-            break;
-        }
-    }
-    for (int i = data + 1; i < strlen(str) - 1; i++) {
-        if (str[i] == '.' && ((str[i + 1] < 48 || str[i + 1] > 57)
-            || (str[i - 1] < 48 || str[i - 1] > 57)))
-            flag = 1;
-        else if (
-                str[i] == ',' && (str[i + 1] != ' ')
-                && (str[i - 1] < 48 && str[i - 1] > 57))
-            flag = 1;
-    }
-    return flag;
-}
+struct Point {
+    double x;
+    double y;
+};
 
-int num(char* str){
-    int flag=1;
-    int data;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == '(') {
-            data = i;
-            break;
-        }
-    }
-    int cnt=0;
-    for (int i = data + 1; i < strlen(str) - 2; i++) {
-	if(str[i] >= 48 && str[i] <= 57)
-	    cnt++;
-	else if(str[i]=='.')
-	    cnt--;
-	if(cnt>3)
-	    flag=1;
-	else
-	    flag=0;
-    }
-    return flag;
-}
+struct Circle {
+    struct Point center;
+    double radius;
+};
 
-int Simval(char* str)
+enum Bugs {
+    BUG_NAME,
+    BUG_STAPLES,
+    BUG_NUMBER,
+    BUG_UNIDENTIFIED_VARIABLES,
+    BUG_EXPECT_COMMA,
+    BUG_STAPLES_2,
+    BUG_EXTRA_POINT,
+};
+
+void output_bugs(int errors, int num, char* ch)
 {
-    int flag = 1;
-    int data;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == '(') {
-            data = i;
-            break;
-        }
+    for (int i = 0; i < num; i++) {
+        putchar(' ');
     }
-    for (int i = data + 1; i < strlen(str) - 2; i++) {
-        if (str[i] == ',') {
-            flag = 0;
+    printf("^\n");
+
+    switch (errors) {
+    case BUG_NAME:
+        printf("An error %d was found in the input line %s'Circle'%s\n",
+               num,
+               RED_FLASH,
+               END);
+        break;
+    case BUG_STAPLES:
+        if (*ch == ')') {
+            printf("An error %d was found in the input line %s')'%s\n",
+                   num,
+                   RED_FLASH,
+                   END);
+            break;
         } else {
-            continue;
-        }
-    }
-    return flag;
-}
-
-int End(char* str)
-{
-    int flag = 1;
-    int bracket = 0;
-    long int ending = strlen(str) - 2;
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == ')') {
-            bracket = i;
+            printf("An error %d was found in the input line %s'('%s\n",
+                   num,
+                   RED_FLASH,
+                   END);
             break;
         }
+    case BUG_STAPLES_2:
+    	printf("An error %d was found in the input line %s')'%s\n",
+                   num,
+                   RED_FLASH,
+                   END);
+        break;
+    case BUG_NUMBER:
+        printf("An error %d was found in the input line %s'double'%s\n",
+               num,
+               RED_FLASH,
+               END);
+        break;
+    case BUG_UNIDENTIFIED_VARIABLES:
+        printf("An error %d was found in the input line %s'variable'%s\n",
+               num,
+               RED_FLASH,
+               END);
+        break;
+    case BUG_EXPECT_COMMA:
+        printf("An error %d was found in the input line %s','%s\n",
+               num,
+               RED_FLASH,
+               END);
+        break;
+    case BUG_EXTRA_POINT:
+    	printf("An error %d was found in the input line %s'.'%s\n",
+               num,
+               RED_FLASH,
+               END);
+        break;
     }
-    if (bracket == ending || bracket == ending + 1)
-        flag = 0;
-    return flag;
+}
+
+void to_lower(char* str, int ch)
+{
+    for (int i = 0; i < ch; i++) {
+        str[i] = tolower(str[i]);
+    }
+}
+
+double x_data(char* arr, int* num)
+{
+    char free_space[20];
+    int i = 0;
+
+    while (!isdigit(arr[*num]) && arr[*num] != '-') {
+        if (arr[*num] == '(') {
+            *num += 1;
+        } else {
+            if (arr[*num] == ')') {
+                output_bugs(BUG_STAPLES, *num, &arr[*num]);
+                exit(1);
+            }
+            if (arr[*num] == ' '){
+            	output_bugs(BUG_STAPLES, *num, &arr[*num]);
+                exit(1);            
+            } else {
+                output_bugs(BUG_NUMBER, *num, NULL);
+                exit(1);
+            }
+        }
+    }
+
+    while (isdigit(arr[*num]) || arr[*num] == '-' || arr[*num] == '.') {
+        free_space[i] = arr[*num];
+        i++;
+        *num += 1;
+    }
+    
+    if (arr[*num] != ' ') {
+        output_bugs(BUG_UNIDENTIFIED_VARIABLES, *num, NULL);
+        exit(1);
+    }
+    char* dumpster;
+    return strtod(free_space, &dumpster);
+}
+
+double y_data(char* arr, int* num)
+{
+    char free_space[20];
+    int i = 0;
+
+    while (!isdigit(arr[*num]) && arr[*num] != '-') {
+        if (arr[*num] == ' ') {
+            *num += 1;
+        } else {
+            output_bugs(BUG_NUMBER, *num, NULL);
+            exit(1);
+        }
+    }
+
+    while (isdigit(arr[*num]) || arr[*num] == '-' || arr[*num] == '.') {
+        free_space[i] = arr[*num];
+        i++;
+        *num += 1;
+    }
+
+    while (arr[*num] != ',') {
+        if (arr[*num] == ' ') {
+            *num += 1;
+        } else {
+            output_bugs(BUG_EXPECT_COMMA, *num, NULL);
+            exit(1);
+        }
+    }
+    char* dumpster;
+    return strtod(free_space, &dumpster);
+}
+
+double radius_data(char* arr, int* num)
+{
+    char free_space[20];
+    int i = 0;
+    int extra_point_count = 0;
+
+    while (!isdigit(arr[*num])) {
+        if (arr[*num] == ' ' || arr[*num] == ',') {
+            *num += 1;
+        } else {
+            output_bugs(BUG_NUMBER, *num, NULL);
+            exit(1);
+        }
+    }
+
+    while (isdigit(arr[*num]) || arr[*num] == '.') {
+        free_space[i] = arr[*num];
+        i++;
+        *num += 1;
+        if (arr[*num] == '.'){
+            extra_point_count += 1;
+        }
+        if (extra_point_count >= 2){
+            output_bugs(BUG_EXTRA_POINT, *num, &arr[*num]);
+            exit(1);
+        }
+    }
+
+    while (arr[*num] != ')') {
+        if (arr[*num] == ' ') {
+            *num += 1;
+        } else {
+            if (arr[*num] == '(') {
+                output_bugs(BUG_STAPLES, *num, &arr[*num]);
+                exit(1);
+            } else {
+                output_bugs(BUG_STAPLES_2, *num, &arr[*num]);
+                exit(1);
+            }
+        }
+    }
+    char* dumpster;
+    return strtod(free_space, &dumpster);
+}
+
+void empty(char* arr, int* num)
+{
+    *num += 1;
+    while (arr[*num] != '\n' && arr[*num] != EOF) {
+        if (arr[*num] == ' ') {
+            *num += 1;
+        } else {
+            output_bugs(BUG_UNIDENTIFIED_VARIABLES, *num, NULL);
+            exit(1);
+        }
+    }
+}
+
+struct Point find_center(char* arr, int* num)
+{
+    struct Point Center;
+
+    Center.x = x_data(arr, num);
+    Center.y = y_data(arr, num);
+
+    return Center;
+}
+
+struct Circle find_out_circle(struct Point* Center, char* arr, int* num)
+{
+    struct Circle circle;
+
+    circle.center.x = Center->x;
+    circle.center.y = Center->y;
+    circle.radius = radius_data(arr, num);
+
+    return circle;
+}
+
+void output_circle_message(struct Circle* circle)
+{
+    printf("\ncircle(%.2f %.2f, %.2f)\n",
+           circle->center.x,
+           circle->center.y,
+           circle->radius);
+    printf("perimeter: %.4f\n", (2 * M_PI * circle->radius));
+    printf("area: %.4f\n", ((circle->radius * circle->radius) * M_PI));
 }
 
 int main()
 {
-    FILE* file;
-    file = fopen("lab1.txt", "r");
-    char str[40];
-    int cnt = 1;
-    fgets(str, 40, file);
-    if (Figur(str)) {
-        printf("Неправильное название фигуры в %d строке\n", cnt);
-        if (first(str))
-            printf("Конкретная ошибка:Ошибка открывающей скобки\n");
-    } else if (Arg(str))
-        printf("Неправильно введены координаты в %d строке\n", cnt);
-    else if(num(str))
-	printf("Слишком много переданных аргументов в %d строке \n",cnt);
-    else if (Simval(str))
-        printf("Неправильная постановка запятой в %d строке\n", cnt);
-    else if (End(str))
-        printf("Ошибка завершающей скобки в %d строке\n", cnt);
-    else
-        printf("%s\n", str);
-    for (int i = 0; i < strlen(str); i++) {
-        if (str[i] == '\n' && fgets(str, 40, file) != NULL) {
-            cnt++;
-            if (Figur(str)) {
-                printf("Неправильное название фигуры во %d строке\n", cnt);
-                if (first(str))
-                    printf("Конкретная ошибка:Ошибка открывающей скобки\n");
-            } else if (Arg(str))
-                printf("Неправильно введены координаты во %d строке\n", cnt);
-            else if(num(str))
-	        printf("Слишком много переданных аргументов во %d строке \n",cnt);
-	    else if (Simval(str))
-                printf("Неправильная постановка запятой во %d строке\n", cnt);
-            else if (End(str))
-                printf("Ошибка завершающей скобки во %d строке\n", cnt);
-            else
-                printf("%s\n", str);
-            i = 0;
+    char enter[MAX], shape[MAX];
+    int num = 0;
+
+    printf("Enter the name and coordinates of the shape (or press Enter for "
+           "exit):\n");
+    fgets(enter, MAX, stdin);
+
+    for (int i = 0; i < strlen(enter); i++) {
+        if (enter[i] == '(' || enter[i] == ' ') {
+            to_lower(shape, num);
+            if (strcmp(shape, "circle") == 0) {
+                struct Point center = find_center(enter, &num);
+                struct Circle circle = find_out_circle(&center, enter, &num);
+                empty(enter, &num);
+                output_circle_message(&circle);
+                break;
+            } else {
+                output_bugs(BUG_NAME, 0, NULL);
+                exit(1);
+            }
+        } else if (enter[i] == ')') {
+            output_bugs(BUG_STAPLES, num, &enter[i]);
+            exit(1);
         }
+
+        shape[num] = enter[i];
+        num++;
     }
-    fclose(file);
+
     return 0;
 }
