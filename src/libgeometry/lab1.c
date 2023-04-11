@@ -29,10 +29,10 @@ void output_bugs(int errors, int num, char* ch)
             break;
         }
     case BUG_STAPLES_2:
-    	printf("An error %d was found in the input line %s')'%s\n",
-                   num,
-                   RED_FLASH,
-                   END);
+        printf("An error %d was found in the input line %s')'%s\n",
+               num,
+               RED_FLASH,
+               END);
         break;
     case BUG_NUMBER:
         printf("An error %d was found in the input line %s'double'%s\n",
@@ -53,7 +53,7 @@ void output_bugs(int errors, int num, char* ch)
                END);
         break;
     case BUG_EXTRA_POINT:
-    	printf("An error %d was found in the input line %s'.'%s\n",
+        printf("An error %d was found in the input line %s'.'%s\n",
                num,
                RED_FLASH,
                END);
@@ -81,9 +81,9 @@ double x_data(char* arr, int* num)
                 output_bugs(BUG_STAPLES, *num, &arr[*num]);
                 exit(1);
             }
-            if (arr[*num] == ' '){
-            	output_bugs(BUG_STAPLES, *num, &arr[*num]);
-                exit(1);            
+            if (arr[*num] == ' ') {
+                output_bugs(BUG_STAPLES, *num, &arr[*num]);
+                exit(1);
             } else {
                 output_bugs(BUG_NUMBER, *num, NULL);
                 exit(1);
@@ -96,7 +96,7 @@ double x_data(char* arr, int* num)
         i++;
         *num += 1;
     }
-    
+
     if (arr[*num] != ' ') {
         output_bugs(BUG_UNIDENTIFIED_VARIABLES, *num, NULL);
         exit(1);
@@ -156,10 +156,10 @@ double radius_data(char* arr, int* num)
         free_space[i] = arr[*num];
         i++;
         *num += 1;
-        if (arr[*num] == '.'){
+        if (arr[*num] == '.') {
             extra_point_count += 1;
         }
-        if (extra_point_count >= 2){
+        if (extra_point_count >= 2) {
             output_bugs(BUG_EXTRA_POINT, *num, &arr[*num]);
             exit(1);
         }
