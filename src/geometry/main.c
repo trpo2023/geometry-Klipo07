@@ -1,4 +1,4 @@
-#include </home/demo/geometry-Klipo07/src/libgeometry/lab1.h>
+#include "../libgeometry/lab1.h"
 
 int main()
 {
