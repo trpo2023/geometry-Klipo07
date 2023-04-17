@@ -1,40 +1,42 @@
-CC = gcc
+APP_NAME = geometry
+LIB_NAME = libgeometry
+
 CFLAGS = -Wall -Wextra -Werror
+CPPFLAGS = -I src -MP -MMD
 
-SRC_DIR = src
-OBJ_DIR = obj
 BIN_DIR = bin
+OBJ_DIR = obj
+SRC_DIR = src
 
-APP_NAME = app
+APP_PATH = $(BIN_DIR)/$(APP_NAME)
+LIB_PATH = $(OBJ_DIR)/$(SRC_DIR)/$(LIB_NAME)/$(LIB_NAME).a
 
-GEOMETRY_OBJ = $(OBJ_DIR)/geometry/main.o
-GEOMETRY_CALC_OBJ = $(OBJ_DIR)/libgeometry/lab1.o
+SRC_EXT = c
 
-APP_DEPS = $(GEOMETRY_OBJ) $(GEOMETRY_CALC_OBJ)
-APP_OBJ = $(BIN_DIR)/$(APP_NAME)
+APP_SOURCES = $(shell find $(SRC_DIR)/$(APP_NAME) -name '*.$(SRC_EXT)')
+APP_OBJECTS = $(APP_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
-.PHONY: all clean
+LIB_SOURCES = $(shell find $(SRC_DIR)/$(LIB_NAME) -name '*.$(SRC_EXT)')
+LIB_OBJECTS = $(LIB_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
 
-all: $(APP_OBJ)
+DEPS = $(APP_OBJECTS:.o=.d) $(LIB_OBJECTS:.o=.d)
 
-$(APP_OBJ): $(APP_DEPS)
-	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ $^
+.PHONY: all
+all: $(APP_PATH)
 
-$(GEOMETRY_OBJ): $(SRC_DIR)/geometry/main.c | $(OBJ_DIR)/geometry
-	$(CC) $(CFLAGS) -c -o $@ $<
+-include $(DEPS)
 
-$(GEOMETRY_CALC_OBJ): $(SRC_DIR)/libgeometry/lab1.c | $(OBJ_DIR)/libgeometry
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(APP_PATH): $(APP_OBJECTS) $(LIB_PATH)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $^ -o $@ $(LDFLAGS) $(LDLIBS)
 
+$(LIB_PATH): $(LIB_OBJECTS)
+	ar rcs $@ $^
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+.PHONY: clean
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-# Используем include для автоматической генерации зависимостей из исходных файлов
--include $(OBJ_DIR)/geometry/main.d $(OBJ_DIR)/libgeometry/lab1.d
-
-$(OBJ_DIR)/geometry:
-	mkdir -p $@
-
-$(OBJ_DIR)/libgeometry:
-	mkdir -p $@
+	$(RM) $(APP_PATH) $(LIB_PATH)
+	find $(OBJ_DIR) -name '*.o' -exec $(RM) '{}' \;
+	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
