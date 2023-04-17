@@ -1,4 +1,5 @@
 #include "libgeometry/lab1.h"
+#include <libgeometry/lab1.h>
 
 int main()
 {
