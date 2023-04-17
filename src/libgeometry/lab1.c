@@ -1,4 +1,4 @@
-#include "../libgeometry/lab1.h"
+#include <libgeometry/lab1.h>
 
 void output_bugs(int errors, int num, char* ch)
 {
