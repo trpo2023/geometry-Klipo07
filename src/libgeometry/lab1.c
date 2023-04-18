@@ -1,4 +1,5 @@
 #include <libgeometry/lab1.h>
+#include <math.h>
 
 void output_bugs(int errors, int num, char* ch)
 {

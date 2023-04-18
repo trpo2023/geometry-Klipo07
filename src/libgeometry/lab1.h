@@ -1,9 +1,7 @@
 #pragma once
 #include <ctype.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define RED_FLASH "\e[5;31m"
 #define END "\e[0m"
