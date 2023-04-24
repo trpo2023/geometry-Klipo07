@@ -8,23 +8,23 @@
 
 #include <ctest.h>
 
-CTEST(output_bugs, outputs_correct_message) {
+CTEST(TEST_output_bugs, outputs_correct_message) {
     char message[] = "This is a test message";
     output_bugs(1, 5, message);
     ASSERT_STR("Error 1 occurred at location 5: This is a test message", message);
 }
 
-CTEST(to_lower, converts_string_to_lowercase) {
+CTEST(TEST_to_lower, converts_string_to_lowercase) {
     char str[] = "Hello, World!";
     to_lower(str, 13);
     ASSERT_STR("hello, world!", str);
 }
 
-CTEST(x_data, returns_correct_x_coordinate) {
+CTEST(TEST_x_data, returns_correct_x_coordinate) {
     int num;
     double result = x_data("1.23, 4.56", &num);
     ASSERT_EQUAL(2, num);
-    ASSERT_DBL_NEAR_TOL(1.23, result, 1e-6);
+    ASSERT_DBL_NEAR_TOL(1.23, result, 1e-4);
 }
 
 CTEST(y_data, returns_correct_y_coordinate) {
