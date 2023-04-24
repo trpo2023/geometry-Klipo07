@@ -21,27 +21,39 @@ CTEST(TEST_to_lower, converts_string_to_lowercase) {
 }
 
 CTEST(TEST_x_data, returns_correct_x_coordinate) {
-    int num;
-    double result = x_data("1.23, 4.56", &num);
-    ASSERT_EQUAL(2, num);
-    ASSERT_DBL_NEAR_TOL(1.23, result, 1e-4);
+    int num = 0;
+    double result = x_data("(1.23 4.56, 3)", &num);
+    ASSERT_EQUAL(1, result);
+    ASSERT_EQUAL(5, num);
+    ASSERT_DBL_NEAR_TOL(1.23, result, 1e-6);
 }
 
-CTEST(y_data, returns_correct_y_coordinate) {
+CTEST(TEST_y_data, returns_correct_y_coordinate) {
     int num;
-    double result = y_data("1.23, 4.56", &num);
-    ASSERT_EQUAL(2, num);
-    ASSERT_DBL_NEAR_TOL(4.56, result, 1e-6);
+    int result = y_data("1.23, 4.56, 3", &num);
+    ASSERT_EQUAL(1, result);
+    ASSERT_EQUAL(4, num);
+    ASSERT_DBL_NEAR_TOL(1, result, 1e-6);
 }
 
-CTEST(radius_data, returns_correct_radius) {
-    int num;
-    double result = radius_data("1.23, 4.56, 7.89", &num);
+CTEST(radius_data, valid_string)
+{
+    char arr[] = "(1.23 4.56, 7.86)";
+    int num = 0;
+    double result = radius_data(arr, &num);
+    ASSERT_DBL_NEAR_TOL(7.86, result, 1e-6);
+    ASSERT_EQUAL(strlen(arr)-1, num);
+}
+
+/*
+CTEST(TEST_radius_data, returns_correct_radius) {
+    int num = 0;
+    double result = radius_data("(1.23 4.56, 7.86)", &num);
+    ASSERT_EQUAL(2.0, result);
     ASSERT_EQUAL(3, num);
-    ASSERT_DBL_NEAR_TOL(7.89, result, 1e-6);
 }
-
-CTEST(empty, empties_string_and_resets_num) {
+*/
+CTEST(TEST_empty, empties_string_and_resets_num) {
     char str[] = "This is a test string";
     int num = 5;
     empty(str, &num);
