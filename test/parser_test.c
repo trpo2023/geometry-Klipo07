@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <libgeometry/parser.h>
+#include <libgeometry/lab1.h>
 
 #include <ctest.h>
 
