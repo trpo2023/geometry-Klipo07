@@ -7,7 +7,7 @@
 int main()
 {
     const char* output_path = "output";
-    const char* input_path = "input/commands";
+    const char* input_path = "vazhno/textovik";
 
     int status = is_input_files_exist(input_path, output_path);
     if (status) {
