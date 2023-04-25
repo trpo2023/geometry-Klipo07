@@ -1,36 +1,44 @@
-#include <libgeometry/lab1.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include <libgeometry/lab1.h>
 
 int main()
 {
-    char enter[MAX], shape[MAX];
-    int num = 0;
+    const char* output_path = "output";
+    const char* input_path = "input/commands";
 
-    printf("Enter the name and coordinates of the shape (or press Enter for "
-           "exit):\n");
-    fgets(enter, MAX, stdin);
-
-    for (size_t i = 0; i < strlen(enter); i++) {
-        if (enter[i] == '(' || enter[i] == ' ') {
-            to_lower(shape, num);
-            if (strcmp(shape, "circle") == 0) {
-                struct Point center = find_center(enter, &num);
-                struct Circle circle = find_out_circle(&center, enter, &num);
-                empty(enter, &num);
-                output_circle_message(&circle);
-                break;
-            } else {
-                output_bugs(BUG_NAME, 0, NULL);
-                exit(1);
-            }
-        } else if (enter[i] == ')') {
-            output_bugs(BUG_STAPLES, num, &enter[i]);
-            exit(1);
-        }
-
-        shape[num] = enter[i];
-        num++;
+    int status = is_input_files_exist(input_path, output_path);
+    if (status) {
+        handle_error(status, (char*)input_path);
+        return status;
     }
 
+    FILE* input_file = fopen(input_path, "r");
+    char input[MAX_INPUT_LENGTH];
+    Circle* circles = (Circle*)malloc(sizeof(Circle) * MAX_CIRCLES);
+    int i = 0;
+    for (; fgets(input, MAX_INPUT_LENGTH, input_file); i++) {
+        if (i > 0 && i % MAX_CIRCLES == 0) {
+            Circle* tmp = (Circle*)realloc(
+                    circles, MAX_CIRCLES * 2 * (i / MAX_CIRCLES));
+            if (!tmp)
+                return ERROR_REALLOC;
+            circles = tmp;
+        }
+        input[strcspn(input, "\n")] = '\0';
+        status = parse_circle(input, &circles[i]);
+        if (status) {
+            handle_error(status, input);
+            return status;
+        } else {
+            calculate_circle(&circles[i]);
+        }
+    }
+    get_intersects_circles(circles, i);
+    print_circles(output_path, circles, i);
+    fclose(input_file);
+    free_circles(circles, i);
     return 0;
 }

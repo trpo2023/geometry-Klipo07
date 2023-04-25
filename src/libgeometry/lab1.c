@@ -1,228 +1,198 @@
-#include <libgeometry/lab1.h>
+#include <ctype.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void output_bugs(int errors, int num, char* ch)
+#include <libgeometry/lab1.h>
+
+int is_input_files_exist(const char* input_path, const char* output_path)
 {
-    for (int i = 0; i < num; i++) {
-        putchar(' ');
-    }
-    printf("^\n");
+    FILE* output_file = fopen(output_path, "w");
+    if (!output_file)
+        return ERROR_FILE_OUTPUT;
 
-    switch (errors) {
-    case BUG_NAME:
-        printf("An error %d was found in the input line %s'Circle'%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    case BUG_STAPLES:
-        if (*ch == ')') {
-            printf("An error %d was found in the input line %s')'%s\n",
-                   num,
-                   RED_FLASH,
-                   END);
-            break;
-        } else {
-            printf("An error %d was found in the input line %s'('%s\n",
-                   num,
-                   RED_FLASH,
-                   END);
-            break;
-        }
-    case BUG_STAPLES_2:
-        printf("An error %d was found in the input line %s')'%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    case BUG_NUMBER:
-        printf("An error %d was found in the input line %s'double'%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    case BUG_UNIDENTIFIED_VARIABLES:
-        printf("An error %d was found in the input line %s'variable'%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    case BUG_EXPECT_COMMA:
-        printf("An error %d was found in the input line %s','%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    case BUG_EXTRA_POINT:
-        printf("An error %d was found in the input line %s'.'%s\n",
-               num,
-               RED_FLASH,
-               END);
-        break;
-    }
+    fclose(output_file);
+
+    FILE* input_file = fopen(input_path, "r");
+
+    if (!input_file)
+        return ERROR_FILE_INPUT;
+
+    fclose(input_file);
+    return 0;
 }
 
-void to_lower(char* str, int ch)
+void handle_error(int error_id, char* str)
 {
-    for (int i = 0; i < ch; i++) {
+    char* error_msg;
+    switch (error_id) {
+    case ERROR_FILE_OUTPUT:
+        error_msg = "Error: can't create output file";
+        break;
+    case ERROR_FILE_INPUT:
+        error_msg = "Error: can't open input file";
+        break;
+    case ERROR_PARSER_NAME:
+        error_msg = "Error: expected 'circle'";
+        break;
+    case ERROR_PARSER_LEFT_PARENTHESIS:
+        error_msg = "Error: expected '('";
+        break;
+    case ERROR_PARSER_RIGHT_PARENTHESIS:
+        error_msg = "Error: expected ')'";
+        break;
+    case ERROR_PARSER_COMMA:
+        error_msg = "Error: expected ','";
+        break;
+    case ERROR_PARSER_DOUBLE:
+        error_msg = "Error: expected <double>";
+        break;
+    case ERROR_PARSER_UNEXPECTED_TOKEN:
+        error_msg = "Error: unexpected token";
+        break;
+    default:
+        error_msg = "Error: something wrong";
+        break;
+    }
+    fprintf(stderr, "%s\n%s\n", error_msg, str);
+}
+
+char* lower_all(char* str)
+{
+    if (!str)
+        return NULL;
+    int i = 0;
+    while (str[i] != '\0') {
         str[i] = tolower(str[i]);
+        i += 1;
     }
+    return str;
 }
-
-double x_data(char* arr, int* num)
+void print_circles(const char* output_path, Circle* circles, int count)
 {
-    char free_space[20];
-    int i = 0;
+    FILE* file = fopen(output_path, "a");
+    for (int i = 0; i < count; i++) {
+        char output[MAX_OUTPUT_LENGTH];
+        sprintf(output,
+                "%d. circle(%f %f, %f)\n perimetr: %f\n area: "
+                "%f\n intersects:\n",
+                i + 1,
+                circles[i].x,
+                circles[i].y,
+                circles[i].r,
+                circles[i].perimetr,
+                circles[i].area);
 
-    while (!isdigit(arr[*num]) && arr[*num] != '-') {
-        if (arr[*num] == '(') {
-            *num += 1;
-        } else {
-            if (arr[*num] == ')') {
-                output_bugs(BUG_STAPLES, *num, &arr[*num]);
-                exit(1);
-            }
-            if (arr[*num] == ' ') {
-                output_bugs(BUG_STAPLES, *num, &arr[*num]);
-                exit(1);
-            } else {
-                output_bugs(BUG_NUMBER, *num, NULL);
-                exit(1);
-            }
-        }
-    }
-
-    while (isdigit(arr[*num]) || arr[*num] == '-' || arr[*num] == '.') {
-        free_space[i] = arr[*num];
-        i++;
-        *num += 1;
-    }
-
-    if (arr[*num] != ' ') {
-        output_bugs(BUG_UNIDENTIFIED_VARIABLES, *num, NULL);
-        exit(1);
-    }
-    char* dumpster;
-    return strtod(free_space, &dumpster);
-}
-
-double y_data(char* arr, int* num)
-{
-    char free_space[20];
-    int i = 0;
-
-    while (!isdigit(arr[*num]) && arr[*num] != '-') {
-        if (arr[*num] == ' ') {
-            *num += 1;
-        } else {
-            output_bugs(BUG_NUMBER, *num, NULL);
-            exit(1);
-        }
-    }
-
-    while (isdigit(arr[*num]) || arr[*num] == '-' || arr[*num] == '.') {
-        free_space[i] = arr[*num];
-        i++;
-        *num += 1;
-    }
-
-    while (arr[*num] != ',') {
-        if (arr[*num] == ' ') {
-            *num += 1;
-        } else {
-            output_bugs(BUG_EXPECT_COMMA, *num, NULL);
-            exit(1);
-        }
-    }
-    char* dumpster;
-    return strtod(free_space, &dumpster);
-}
-
-double radius_data(char* arr, int* num)
-{
-    char free_space[20];
-    int i = 0;
-    int extra_point_count = 0;
-
-    while (!isdigit(arr[*num])) {
-        if (arr[*num] == ' ' || arr[*num] == ',') {
-            *num += 1;
-        } else {
-            output_bugs(BUG_NUMBER, *num, NULL);
-            exit(1);
-        }
-    }
-
-    while (isdigit(arr[*num]) || arr[*num] == '.') {
-        free_space[i] = arr[*num];
-        i++;
-        *num += 1;
-        if (arr[*num] == '.') {
-            extra_point_count += 1;
-        }
-        if (extra_point_count >= 2) {
-            output_bugs(BUG_EXTRA_POINT, *num, &arr[*num]);
-            exit(1);
-        }
-    }
-
-    while (arr[*num] != ')') {
-        if (arr[*num] == ' ') {
-            *num += 1;
-        } else {
-            if (arr[*num] == '(') {
-                output_bugs(BUG_STAPLES, *num, &arr[*num]);
-                exit(1);
-            } else {
-                output_bugs(BUG_STAPLES_2, *num, &arr[*num]);
-                exit(1);
+        for (int j = 0; j < count; j++) {
+            if (circles[i].intersects[j] == 1) {
+                sprintf(output + strlen(output), "\t%d. circle\n", j + 1);
             }
         }
+        sprintf(output + strlen(output), "\n");
+        fprintf(file, "%s", output);
+        printf("%s", output);
     }
-    char* dumpster;
-    return strtod(free_space, &dumpster);
+    fclose(file);
 }
 
-void empty(char* arr, int* num)
+int is_circle(char* str)
 {
-    *num += 1;
-    while (arr[*num] != '\n' && arr[*num] != EOF) {
-        if (arr[*num] == ' ') {
-            *num += 1;
-        } else {
-            output_bugs(BUG_UNIDENTIFIED_VARIABLES, *num, NULL);
-            exit(1);
+    if (strncmp(str, "circle", 6))
+        return ERROR_PARSER_NAME;
+    return 0;
+}
+
+int is_double(char* str_start, char** str_end, double* num)
+{
+    *num = strtod(str_start, str_end);
+    if (str_start == *str_end)
+        return ERROR_PARSER_DOUBLE;
+    return 0;
+}
+
+int is_prefix(char* str_start, char* prefix)
+{
+    size_t length = strlen(prefix);
+    length = !length ? 1 : length;
+    if (strncmp(str_start, prefix, length))
+        return ERROR_PARSER_UNEXPECTED_TOKEN;
+    return 0;
+}
+
+int is_num_circle(char* str_start, char** str_end, char* ending, double* x)
+{
+    if (is_double(str_start, str_end, x))
+        return ERROR_PARSER_DOUBLE;
+    else if (is_prefix(*str_end, ending))
+        return ERROR_PARSER_UNEXPECTED_TOKEN;
+    *str_end += 1;
+    return 0;
+}
+
+void calculate_circle(Circle* circle)
+{
+    circle->perimetr = 2 * M_PI * circle->r;
+    circle->area = M_PI * circle->r * circle->r;
+}
+
+void get_intersects_circles(Circle* circles, int count)
+{
+    for (int i = 0; i < count; i++) {
+        int* intersects = (int*)calloc(sizeof(int), count);
+        for (int j = 0; j < count; j++) {
+            if (i == j)
+                continue;
+            double distance
+                    = sqrt(pow(circles[i].x - circles[j].x, 2)
+                           + pow(circles[i].y - circles[j].y, 2));
+            double sum_radii = circles[i].r + circles[j].r;
+
+            if (distance <= sum_radii) {
+                intersects[j] = 1;
+            }
         }
+        circles[i].intersects = intersects;
     }
 }
 
-struct Point find_center(char* arr, int* num)
+void free_circles(Circle* circles, int count)
 {
-    struct Point Center;
-
-    Center.x = x_data(arr, num);
-    Center.y = y_data(arr, num);
-
-    return Center;
+    for (int i = 0; i < count; i++) {
+        if (circles[i].intersects)
+            free(circles[i].intersects);
+    }
+    free(circles);
 }
-
-struct Circle find_out_circle(struct Point* Center, char* arr, int* num)
+int parse_circle(char* start, Circle* out_values)
 {
-    struct Circle circle;
+    start = lower_all(start);
+    char** end = &start;
+    int status = 0;
+    double x, y, r;
 
-    circle.center.x = Center->x;
-    circle.center.y = Center->y;
-    circle.radius = radius_data(arr, num);
+    if (is_circle(start))
+        return ERROR_PARSER_NAME;
 
-    return circle;
-}
+    if (is_prefix(start + 6, "("))
+        return ERROR_PARSER_UNEXPECTED_TOKEN;
 
-void output_circle_message(struct Circle* circle)
-{
-    printf("\ncircle(%.2f %.2f, %.2f)\n",
-           circle->center.x,
-           circle->center.y,
-           circle->radius);
-    printf("perimeter: %.4f\n", (2 * M_PI * circle->radius));
-    printf("area: %.4f\n", ((circle->radius * circle->radius) * M_PI));
+    status = is_num_circle(start + 7, end, " ", &x);
+    if (status)
+        return status;
+    status = is_num_circle(*end, end, ",", &y);
+    if (status)
+        return status;
+    status = is_num_circle(*end, end, ")", &r);
+    if (status)
+        return status;
+
+    if (is_prefix(*end, "\0"))
+        return ERROR_PARSER_UNEXPECTED_TOKEN;
+
+    out_values->x = x;
+    out_values->y = y;
+    out_values->r = r;
+
+    return 0;
 }
