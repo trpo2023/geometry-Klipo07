@@ -1,0 +1,43 @@
+1. circle(0.000000 0.000000, 1.000000)
+ perimetr: 6.283185
+ area: 3.141593
+ intersects:
+	3. circle
+	4. circle
+	5. circle
+
+2. circle(2.000000 2.000000, 1.000000)
+ perimetr: 6.283185
+ area: 3.141593
+ intersects:
+	3. circle
+	4. circle
+	5. circle
+
+3. circle(2.000000 2.000000, 2.000000)
+ perimetr: 12.566371
+ area: 12.566371
+ intersects:
+	1. circle
+	2. circle
+	4. circle
+	5. circle
+
+4. circle(2.000000 2.000000, 3.000000)
+ perimetr: 18.849556
+ area: 28.274334
+ intersects:
+	1. circle
+	2. circle
+	3. circle
+	5. circle
+
+5. circle(1.000000 1.000000, 1.000000)
+ perimetr: 6.283185
+ area: 3.141593
+ intersects:
+	1. circle
+	2. circle
+	3. circle
+	4. circle
+
