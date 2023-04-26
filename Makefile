@@ -56,10 +56,10 @@ clean:
 	find $(OBJ_DIR) -name '*.o' -exec $(RM) '{}' \;
 	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
 
-.PHONY: run
-run:
+.PHONY: running
+running:
 	./$(APP_PATH)
 
-.PHONY: run_test
-run_test:
+.PHONY: testing
+testing:
 	./$(TEST_PATH)
