@@ -3,42 +3,58 @@
  area: 28.274334
  intersects:
 	2. circle
+	3. circle
+	4. circle
 	5. circle
+	6. circle
 
 2. circle(5.000000 6.000000, 10.000000)
  perimetr: 62.831853
  area: 314.159265
  intersects:
 	1. circle
+	3. circle
+	4. circle
 	5. circle
+	6. circle
 
-3. circle(32.000000 24.000000, 12.000000)
+3. circle(7.000000 8.000000, 12.000000)
  perimetr: 75.398224
  area: 452.389342
  intersects:
+	1. circle
+	2. circle
 	4. circle
 	5. circle
+	6. circle
 
-4. circle(41.000000 30.000000, 25.000000)
- perimetr: 157.079633
- area: 1963.495408
+4. circle(10.000000 12.000000, 20.000000)
+ perimetr: 125.663706
+ area: 1256.637061
  intersects:
+	1. circle
+	2. circle
 	3. circle
 	5. circle
 	6. circle
 
-5. circle(11.000000 13.000000, 14.000000)
- perimetr: 87.964594
- area: 615.752160
+5. circle(11.000000 13.000000, 24.000000)
+ perimetr: 150.796447
+ area: 1809.557368
  intersects:
 	1. circle
 	2. circle
 	3. circle
 	4. circle
+	6. circle
 
-6. circle(12.000000 42.000000, 13.000000)
- perimetr: 81.681409
- area: 530.929158
+6. circle(17.000000 22.000000, 33.000000)
+ perimetr: 207.345115
+ area: 3421.194400
  intersects:
+	1. circle
+	2. circle
+	3. circle
 	4. circle
+	5. circle
 
